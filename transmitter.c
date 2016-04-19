@@ -7,6 +7,8 @@
  * (C) 2016 Justin Loew
  */
 
+#include "transmitter.h"
+
 #include <stdio.h>
 #include <emmintrin.h>
 #include <fcntl.h>
@@ -24,11 +26,11 @@
 
 #define STDIN_BUF_SIZE 100
 
-__m128i reg;
-__m128i reg_zero;
-__m128i reg_one;
-mach_port_t clock_port;
-mach_timespec_t remain;
+static __m128i reg;
+static __m128i reg_zero;
+static __m128i reg_one;
+static mach_port_t clock_port;
+static mach_timespec_t remain;
 static char verbose = TRUE;
 
 static inline void square_am_signal(float time, float frequency)
@@ -54,7 +56,7 @@ static inline void square_am_signal(float time, float frequency)
     }
 }
 
-static void transmit_string(const char *message, size_t len)
+void transmit_string(const char *message, size_t len)
 {
 	// safety first
 	if (!message) {
@@ -95,14 +97,14 @@ static void _transmit_file_des(int fd)
 	}
 }
 
-static void transmit_stdin(void)
+void transmit_stdin(void)
 {
 	printf("Reading from standard input. Start typing, finish with ^D.\n");
 	_transmit_file_des(STDIN_FILENO);
 	printf("Finished reading from standard input.\n");
 }
 
-static void transmit_file(const char *filename)
+void transmit_file(const char *filename)
 {
 	printf("Reading from file...\n");
 	// safety first
@@ -121,7 +123,7 @@ static void transmit_file(const char *filename)
 }
 
 /// Transmit Mary Had a Little Lamb.
-static void transmit_song(void)
+void transmit_song(void)
 {
 	while (TRUE) {
         square_am_signal(0.400, 2673);
@@ -153,7 +155,7 @@ static void transmit_song(void)
     }
 }
 
-void init(void)
+void transmitter_init(void)
 {
 	mach_timebase_info_data_t theTimeBaseInfo;
     mach_timebase_info(&theTimeBaseInfo);
@@ -171,50 +173,4 @@ void init(void)
 	// init registers
     reg_zero = _mm_set_epi32( 0,  0,  0,  0);
     reg_one  = _mm_set_epi32(-1, -1, -1, -1);
-}
-
-/// Print usage and exit.
-void print_usage(const char *my_name)
-{
-	printf("Usage:\n");
-	printf("\t%s\t\tRead from standard input.\n", my_name);
-	printf("\t%s file\t\t Transmit the contents of the named file.\n", my_name);
-	printf("\t%s -s arg1 [arg2 ...]\t\tTransmit the given string(s).\n", my_name);
-	printf("\t%s --song\t\t Play Mary Had a Little Lamb.\n", my_name);
-	exit(EXIT_FAILURE);
-}
-
-int main(int argc, char *argv[])
-{
-	init();
-	
-	// What do we need to transmit?
-	if (argc == 1) {
-		// transmit stdin
-		transmit_stdin();
-		return 0;
-	} else if (argc == 2) {
-		// check if we should play the default song instead
-		if (!strncmp(argv[1], "--song", strlen("--song"))) {
-			transmit_song();
-			return 0;
-		}
-		
-		// command-line arg is the name of a file to transmit
-		transmit_file(argv[1]);
-		return 0;
-	} else {
-		// transmit a string
-		if (strncmp("-s", argv[1], 2)) {
-			// transmit each arg, separated by a space
-			transmit_string(argv[2], strlen(argv[2]));
-			for (int i = 3; i < argc; i++) {
-				transmit_string(" ", 1);
-				transmit_string(argv[i], strlen(argv[i]));
-			}
-			return 0;
-		}
-	}
-	// something went wrong somewhere
-	print_usage(argv[0]);
 }
