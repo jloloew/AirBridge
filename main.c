@@ -28,6 +28,9 @@ int main(int argc, char *argv[])
 {
 	transmitter_init();
 	
+	printf("Welcome to AirBridge!\n");
+	printf("Please tune your radio to AM 1580 kHz and place the antenna over this computer's CPU.\n\n");
+	
 	// What do we need to transmit?
 	if (argc == 1) {
 		// transmit stdin
