@@ -27,6 +27,7 @@ void print_usage(const char *my_name)
 int main(int argc, char *argv[])
 {
 	transmitter_init();
+	transmitter_send_calibration();
 	
 	printf("Welcome to AirBridge!\n");
 	printf("Please tune your radio to AM 1580 kHz and place the antenna over this computer's CPU.\n\n");

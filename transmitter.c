@@ -23,6 +23,7 @@
 #define FREQ_DIV 1568 // G6
 #define BIT_INTERVAL 0.98
 #define DIV_INTERVAL 0.02
+#define CALIBRATION_DURATION 3.0 // seconds
 
 #define STDIN_BUF_SIZE 100
 
@@ -173,4 +174,9 @@ void transmitter_init(void)
 	// init registers
     reg_zero = _mm_set_epi32( 0,  0,  0,  0);
     reg_one  = _mm_set_epi32(-1, -1, -1, -1);
+}
+
+void transmitter_send_calibration(void)
+{
+	square_am_signal(CALIBRATION_DURATION, FREQ_DIV);
 }
