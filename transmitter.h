@@ -10,5 +10,6 @@ void transmit_song(void);
 void transmit_string(const char *message, size_t len);
 void transmitter_init(void);
 void transmitter_send_calibration(void);
+void transmitter_send_terminal(void);
 
 #endif // _TRANSMITTER_H_

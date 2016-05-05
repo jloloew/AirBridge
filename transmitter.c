@@ -24,6 +24,7 @@
 #define BIT_INTERVAL 0.98
 #define DIV_INTERVAL 0.02
 #define CALIBRATION_DURATION 3.0 // seconds
+#define TERMINAL_DURATION 1.0 // seconds
 
 #define STDIN_BUF_SIZE 100
 
@@ -67,7 +68,6 @@ void transmit_string(const char *message, size_t len)
 	for (size_t i = 0; i < len; i++) {
 		// send each char in the message
 		char c = message[i];
-		printf("%c", c);
 		for (int j = 0; j < 8; j++) {
 			// send each bit of the char, one at a time
 			// @TODO: switch to Machester coding to encode clock
@@ -179,4 +179,9 @@ void transmitter_init(void)
 void transmitter_send_calibration(void)
 {
 	square_am_signal(CALIBRATION_DURATION, FREQ_DIV);
+}
+
+void transmitter_send_terminal(void)
+{
+	square_am_signal(TERMINAL_DURATION, FREQ_DIV);
 }
