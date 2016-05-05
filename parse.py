@@ -83,7 +83,7 @@ def signal_found(arr):
 		if lst[i]=="mid":
 			third += 1
 
-	if first >= 3 and second >= 3 and third >= 3:
+	if first >= 5 and second >= 5 and third >= 5:
 		return True
 	else:
 		return False		
@@ -129,16 +129,15 @@ for i in range(5,len(chunk_data)):
 	
 	#get freq of this chunk
 	diff = [lo_av-lo_average,mid_av-mid_average,hi_av-hi_average]
-	print diff
 	index = diff.index(max(diff))
-	print index	
 	if(index==0):
 		freq_list.append("lo")
 	if(index==1):
 		freq_list.append("mid")
 	if(index==2):
 		freq_list.append("hi")
-	
+
+	print(freq_list[len(freq_list)-1])	
 	if len(freq_list) > 5:
 		if start:
 			if len(freq_list)%5 == offset:
