@@ -1,83 +1,152 @@
 import sys, math
-from aubio import source, pitch, freqtomidi
-
-
-
-
+from test import goertzel
+import wave
+import pyaudio
+import Queue
+import numpy as np
 if len(sys.argv) < 2:
-    print "Usage: %s <filename> [samplerate]" % sys.argv[0]
+    print "Usage: %s <filename> " % sys.argv[0]
     sys.exit(1)
 
 filename = sys.argv[1]
-downsample = 1
-samplerate = 44100 / downsample
-if len( sys.argv ) > 2: samplerate = int(sys.argv[2])
 
-win_s = 4096 / downsample # fft size
-hop_s = 512  / downsample # hop size
+w = wave.open(filename)
+fs = w.getframerate()
+width = w.getsampwidth()
+chunkDuration = .2 #.2 second chunks
+chunk = int(chunkDuration*fs)
+window = np.blackman(chunk)
 
-s = source(filename, samplerate, hop_s)
-samplerate = s.samplerate
+p = pyaudio.PyAudio()
+stream = p.open(format = p.get_format_from_width(w.getsampwidth()), channels = w.getnchannels(),rate = fs, output=True)
 
-tolerance = 0.8
+#read .2 second chunk
+data = w.readframes(chunk)
+chunk_data = [] 
+#find the frequencies of each chunk
+while data != '':
+	stream.write(data)
+	indata = np.array(wave.struct.unpack("%dh"%(len(data)/width),\
+                                         data))
+	freqs , results = goertzel(indata,fs, (1046,1048), (1567,1569), (2092,2094))
+
+	chunk_data.append((freqs,results))
+	
+	data = w.readframes(chunk)
+
+stream.close()
+p.terminate()
+
+#finished getting data from chunks, now to parse the data
+
+hi = []
+lo = []
+mid = []
+
+#average first second of audio to get frequency baselines
+for i in range (5):
+	a = chunk_data[i][0]
+	b = chunk_data[i][1]
+	for j in range(len(a)):
+		if a[j] > 1700:
+			hi.append(b[j])
+		elif a[j] < 1300:
+			lo.append(b[j])
+		else:
+			mid.append(b[j])
+
+hi_average = sum(hi)/float(len(hi))
+lo_average = sum(lo)/float(len(lo))
+mid_average = sum(mid)/float(len(mid))
 
 
-pitch_o = pitch("yin", win_s, hop_s, samplerate)
-pitch_o.set_tolerance(tolerance)
+"""
+Determine the frequency in each .2 second chunk that has the highest amplitude increase from its average, then determine the frequency 
+of that second of data by the median frequency of its 5 chunks
+"""
 
-pitches = []
-confidences = []
-total_frames = 0
-while True:
-	samples, read = s()
-	pitch = pitch_o(samples)[0]
-	pitch = int(round(pitch))
-	confidence = pitch_o.get_confidence()
-	if confidence < 0.6: pitch = 0.
-	print "%f %f %f" % (total_frames / float(samplerate), pitch, confidence)
-	pitches.append((total_frames/float(samplerate),pitch))
-	confidences += [confidence]
-	total_frames += read
-	if read < hop_s: break
 
-chunks = []
-average_pitches = []
 
-for i in range(len(pitches)):
-	if pitches[i][1] == 0:
-		del pitches[i]
+#looks for start signal in last 3 seconds of audio
+def signal_found(arr):
+	lst = arr[-15:]
+	first = 0
+	second = 0
+	third = 0
+	for i in range(0,5):
+		if lst[i]=="mid":
+			first += 1
+	for i in range(5,10):
+		if lst[i]=="mid":
+			second += 1
+	for i in range(10,15):
+		if lst[i]=="mid":
+			third += 1
+
+	if first >= 3 and second >= 3 and third >= 3:
+		return True
 	else:
-		break
+		return False		
 
-for i in reversed(range(len(pitches))):
-	if pitches[i][1] == 0:
-		del pitches[i]
+#gets freq of 1 second of audio
+def get_freq(arr):
+	lo_count = 0
+	hi_count = 0
+	
+	for i in arr:
+		if i=="lo":
+			lo_count+=1
+		if i=="hi":
+			hi_count+=1
+	if lo_count>hi_count:
+		return 0
 	else:
-		break
+		return 1
 
 
-seconds = math.ceil(total_frames/float(samplerate))
-start = pitches[0][0]
-
-
-
-for i in range(int(pitches[len(pitches)-1][0]-start)+1):
-	chunks.append([])
-
-
-for pitch in pitches:
-	if(pitch[0]==0):
-		continue
-	chunks[int(pitch[0]-start)].append(pitch[1])
-
-for chunk in chunks:
-	average_pitches.append(sum(chunk)/float(len(chunk)))
-
+start = False
+freq_list = []
+offset = 0
 bits = []
-for pitch in average_pitches:
-	if 900 <= pitch < 1200:
-		bits.append(0)
-	if 1700 <= pitch <2100:
-		bits.append(1) 
-
-print bits
+for i in range(5,len(chunk_data)):
+	a = chunk_data[i][0]
+	b = chunk_data[i][0]
+	hi_amp = []
+	lo_amp = []
+	mid_amp = []
+	#get averages for each freq
+	for j in range(len(a)):
+		if a[j] > 1700:
+			hi_amp.append(b[j])
+		elif a[j] < 1300:
+			lo_amp.append(b[j])
+		else:
+			mid_amp.append(b[j])
+	hi_av = sum(hi_amp)/float(len(hi_amp))
+	lo_av = sum(lo_amp)/float(len(lo_amp))
+	mid_av = sum(mid_amp)/float(len(mid_amp))
+	
+	#get freq of this chunk
+	diff = [lo_av-lo_average,mid_av-mid_average,hi_av-hi_average]
+	index = diff.index(max(diff))
+	print index	
+	if(index==0):
+		freq_list.append("lo")
+	if(index==1):
+		freq_list.append("mid")
+	if(index==2):
+		freq_list.append("hi")
+	
+	if len(freq_list) > 5:
+		if start:
+			if len(freq_list)%5 == offset:
+				bits.append(get_freq(freq_list[-5:]))
+		elif len(freq_list) >= 15:
+			if signal_found(freq_list):
+				print "signal found"
+				start = True
+				offset = len(freq_list)%5
+			
+			
+		
+print bits 	
