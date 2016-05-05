@@ -110,7 +110,7 @@ offset = 0
 bits = []
 for i in range(5,len(chunk_data)):
 	a = chunk_data[i][0]
-	b = chunk_data[i][0]
+	b = chunk_data[i][1]
 	hi_amp = []
 	lo_amp = []
 	mid_amp = []
@@ -122,12 +122,14 @@ for i in range(5,len(chunk_data)):
 			lo_amp.append(b[j])
 		else:
 			mid_amp.append(b[j])
+
 	hi_av = sum(hi_amp)/float(len(hi_amp))
 	lo_av = sum(lo_amp)/float(len(lo_amp))
 	mid_av = sum(mid_amp)/float(len(mid_amp))
 	
 	#get freq of this chunk
 	diff = [lo_av-lo_average,mid_av-mid_average,hi_av-hi_average]
+	print diff
 	index = diff.index(max(diff))
 	print index	
 	if(index==0):
