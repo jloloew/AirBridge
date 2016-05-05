@@ -92,12 +92,18 @@ def signal_found(arr):
 def get_freq(arr):
 	lo_count = 0
 	hi_count = 0
-	
+	mid_count = 0
 	for i in arr:
 		if i=="lo":
 			lo_count+=1
 		if i=="hi":
 			hi_count+=1
+		if i=="mid":
+			mid_count+=1
+
+	if mid_count > hi_count and mid_count > lo_count:
+		return 2
+		
 	if lo_count>hi_count:
 		return 0
 	else:
@@ -141,7 +147,12 @@ for i in range(5,len(chunk_data)):
 	if len(freq_list) > 5:
 		if start:
 			if len(freq_list)%5 == offset:
-				bits.append(get_freq(freq_list[-5:]))
+				bit = get_freq(freq_list[-5:])
+				if bit != 2:
+					bits.append(bit)
+				else:
+					print "Stop Signal Detected"
+					break
 		elif len(freq_list) >= 15:
 			if signal_found(freq_list):
 				print "signal found"
