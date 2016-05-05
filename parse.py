@@ -24,16 +24,20 @@ stream = p.open(format = p.get_format_from_width(w.getsampwidth()), channels = w
 data = w.readframes(chunk)
 chunk_data = [] 
 #find the frequencies of each chunk
+
+print "Running calculations on wav file"
+num = 0 
 while data != '':
+	print "Calculating Chunk " + str(num)
 	stream.write(data)
 	indata = np.array(wave.struct.unpack("%dh"%(len(data)/width),\
                                          data))
-	freqs , results = goertzel(indata,fs, (1046,1048), (1567,1569), (2092,2094))
+	freqs , results = goertzel(indata,fs, (1026,1068), (1567,1569), (2072,2114))
 
 	chunk_data.append((freqs,results))
 	
 	data = w.readframes(chunk)
-
+	num+=.2
 stream.close()
 p.terminate()
 
