@@ -7,6 +7,8 @@ Requires [PyAudio](https://people.csail.mit.edu/hubert/pyaudio) for Capture and 
 
 use python capture.py "seconds" to record audio saved as "output.wav"
 
+after compiling, use ./trasmitter -s "string" to transmit string 
+
 use python parse.py "filename" to parse audio
 
 Audio must start recording before signal starts to play
