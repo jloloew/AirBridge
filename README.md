@@ -16,6 +16,8 @@ Use `python parse.py "filename"` to parse the captured audio file.
 
 Obviously, the audio must start recording before the signal starts to play.
 
+Old demo video:
+[![Demo video](https://img.youtube.com/vi/27C9zokH7Z8/maxresdefault.jpg)](https://youtu.be/27C9zokH7Z8 "Demo video")
 
 UIUC CS 460 final project by jloew2 and foti2
 
