@@ -32,7 +32,7 @@ while data != '':
 	stream.write(data)
 	indata = np.array(wave.struct.unpack("%dh"%(len(data)/width),\
                                          data))
-	freqs , results = goertzel(indata,fs, (1026,1068), (1567,1569), (2072,2114))
+	freqs , results = goertzel(indata,fs, (1036,1058), (1567,1569), (2082,2104))
 
 	chunk_data.append((freqs,results))
 	
