@@ -1,17 +1,21 @@
 # AirBridge
-Bridging the air gap. Uses AM radio signals to exfiltrate data from a secure air gapped computer.
+
+See [https://github.com/jloloew/AirBridge](https://github.com/jloloew/AirBridge) for the most up-to-date version.
+
+Bridging the air gap. Uses AM radio signals to exfiltrate data from an otherwise secure air gapped computer.
 
 Just tune your radio to AM 1580 kHz, and put the antenna just over your computer's CPU. Tested on a mid-2014 13" retina MacBook Pro.
 
-Requires [PyAudio](https://people.csail.mit.edu/hubert/pyaudio) for Capture and Parse 
+Requires [PyAudio](https://people.csail.mit.edu/hubert/pyaudio) for capture and parse.
 
-use python capture.py "seconds" to record audio saved as "output.wav"
+Use `python capture.py "seconds"` to record audio saved as `output.wav`.
 
-after compiling, use ./trasmitter -s "string" to transmit string 
+After compiling, use `./transmitter -s "string"` to transmit a string. For other methods of transmission, run `./transmitter` to see usage information.
 
-use python parse.py "filename" to parse audio
+Use `python parse.py "filename"` to parse the captured audio file.
 
-Audio must start recording before signal starts to play
+Obviously, the audio must start recording before the signal starts to play.
 
 
-UIUC CS460 Final Project by jloew2 and foti2
+UIUC CS 460 final project by jloew2 and foti2
+
